@@ -1,0 +1,260 @@
+- name: PointMovingOnShapes
+  content: |
+    class PointMovingOnShapes(Scene):
+        def construct(self):
+            circle = Circle(radius=1, color=BLUE)
+            dot = Dot()
+            dot2 = dot.copy().shift(RIGHT)
+            self.add(dot)
+
+            line = Line([3, 0, 0], [5, 0, 0])
+            self.add(line)
+
+            self.play(GrowFromCenter(circle))
+            self.play(Transform(dot, dot2))
+            self.play(MoveAlongPath(dot, circle), run_time=2, rate_func=linear)
+            self.play(Rotating(dot, about_point=[2, 0, 0]), run_time=1.5)
+            self.wait()
+  description: |
+    这段代码使用 Manim 库创建了一个点在不同形状上移动的动画场景。具体来说，它绘制并展示了以下动画效果：
+    1. **一个蓝色的圆形**，半径为1。
+    2. **一个点**，初始位置位于原点。
+    3. **将点复制并向右移动**，创建一个新的点。
+    动画效果包括：
+    1. **在场景中心生成圆形**，使用 `GrowFromCenter` 动画效果。
+    2. **点从初始位置变换到新的位置**，使用 `Transform` 动画效果。
+    3. **点沿着圆形路径移动**，使用 `MoveAlongPath` 动画效果，时间为2秒，线性速度。
+    4. **点围绕特定点旋转**，使用 `Rotating` 动画效果，旋转中心为 \([2, 0, 0]\)，时间为1.5秒。
+    这个场景展示了如何在 Manim 中使点沿路径和旋转移动。
+- name: MovingAround
+  content: |
+    class MovingAround(Scene):
+        def construct(self):
+            square = Square(color=BLUE, fill_opacity=1)
+
+            self.play(square.animate.shift(LEFT))
+            self.play(square.animate.set_fill(ORANGE))
+            self.play(square.animate.scale(0.3))
+            self.play(square.animate.rotate(0.4))
+  description: |
+    这段代码使用 Manim 库创建了一个正方形的动画场景。具体来说，它绘制并展示了以下动画效果：
+    1. **创建一个蓝色的正方形**，填充颜色不透明度为1。
+    动画效果包括：
+    1. **将正方形向左移动**，使用 `shift(LEFT)` 动画效果。
+    2. **将正方形的填充颜色更改为橙色**，使用 `set_fill(ORANGE)` 动画效果。
+    3. **缩放正方形**，将其大小缩小为原来的30%，使用 `scale(0.3)` 动画效果。
+    4. **旋转正方形**，顺时针旋转0.4弧度，使用 `rotate(0.4)` 动画效果。
+    这个场景展示了如何在 Manim 中对图形进行移动、颜色更改、缩放和旋转的动画操作。
+- name: MovingAngle
+  content: |
+    class MovingAngle(Scene):
+        def construct(self):
+            rotation_center = LEFT
+
+            theta_tracker = ValueTracker(110)
+            line1 = Line(LEFT, RIGHT)
+            line_moving = Line(LEFT, RIGHT)
+            line_ref = line_moving.copy()
+            line_moving.rotate(
+                theta_tracker.get_value() * DEGREES, about_point=rotation_center
+            )
+            a = Angle(line1, line_moving, radius=0.5, other_angle=False)
+            tex = MathTex(r"\theta").move_to(
+                Angle(
+                    line1, line_moving, radius=0.5 + 3 * SMALL_BUFF, other_angle=False
+                ).point_from_proportion(0.5)
+            )
+
+            self.add(line1, line_moving, a, tex)
+            self.wait()
+
+            line_moving.add_updater(
+                lambda x: x.become(line_ref.copy()).rotate(
+                    theta_tracker.get_value() * DEGREES, about_point=rotation_center
+                )
+            )
+
+            a.add_updater(
+                lambda x: x.become(Angle(line1, line_moving, radius=0.5, other_angle=False))
+            )
+            tex.add_updater(
+                lambda x: x.move_to(
+                    Angle(
+                        line1, line_moving, radius=0.5 + 3 * SMALL_BUFF, other_angle=False
+                    ).point_from_proportion(0.5)
+                )
+            )
+
+            self.play(theta_tracker.animate.set_value(40))
+            self.play(theta_tracker.animate.increment_value(140))
+            self.play(tex.animate.set_color(RED), run_time=0.5)
+            self.play(theta_tracker.animate.set_value(350))
+  description: |
+    这段代码使用 Manim 库创建了一个动态显示角度变化的动画场景。具体来说，它绘制并展示了以下动画效果：
+
+    1. **创建一个固定的水平线**。
+    2. **创建一个可以旋转的线段**，初始状态与固定线段重合。
+    3. **设定旋转中心为左端点**。
+
+    动画效果包括：
+
+    1. **初始化旋转角度**为110度。
+    2. **旋转线段按照初始角度旋转**。
+    3. **在两条线之间绘制一个角度标记**。
+    4. **在角度标记上方显示一个表示角度的数学符号 \(\theta\)**。
+
+    接下来，通过添加更新器实现动态效果：
+
+    1. **更新旋转线段**，使其随角度值变化而旋转。
+    2. **更新角度标记**，使其始终显示两条线之间的角度。
+    3. **更新角度的数学符号位置**，使其始终跟随角度标记。
+
+    然后，执行以下动画：
+
+    1. **将角度从110度减少到40度**。
+    2. **将角度从40度增加到180度**。
+    3. **将角度符号颜色设为红色**。
+    4. **将角度增加到350度**。
+
+    这个场景展示了如何在 Manim 中使用更新器动态显示角度变化和更新角度标记及其标签的位置。
+- name: MovingDots
+  content: |
+    class MovingDots(Scene):
+        def construct(self):
+            d1,d2=Dot(color=BLUE),Dot(color=GREEN)
+            dg=VGroup(d1,d2).arrange(RIGHT,buff=1)
+            l1=Line(d1.get_center(),d2.get_center()).set_color(RED)
+            x=ValueTracker(0)
+            y=ValueTracker(0)
+            d1.add_updater(lambda z: z.set_x(x.get_value()))
+            d2.add_updater(lambda z: z.set_y(y.get_value()))
+            l1.add_updater(lambda z: z.become(Line(d1.get_center(),d2.get_center())))
+            self.add(d1,d2,l1)
+            self.play(x.animate.set_value(5))
+            self.play(y.animate.set_value(4))
+            self.wait()
+  description: |
+    这段代码使用 Manim 库创建了一个动画场景，展示两个点和连接它们的线段的动态移动：
+
+    1. 创建两个点（蓝色和绿色）并水平排列。
+    2. 创建一条红色线段连接两个点。
+    3. 使用 `ValueTracker` 追踪点的水平和垂直位置。
+    4. 添加更新器使点和线段动态移动：
+      - `d1` 的水平位置根据 `x` 变化。
+      - `d2` 的垂直位置根据 `y` 变化。
+      - 线段根据两个点的位置更新。
+
+    动画效果：
+    1. `d1` 沿水平轴移动到 `x=5`。
+    2. `d2` 沿垂直轴移动到 `y=4`。
+- name: MovingGroupToDestination
+  content: |
+    class MovingGroupToDestination(Scene):
+        def construct(self):
+            group = VGroup(Dot(LEFT), Dot(ORIGIN), Dot(RIGHT, color=RED), Dot(2 * RIGHT)).scale(1.4)
+            dest = Dot([4, 3, 0], color=YELLOW)
+            self.add(group, dest)
+            self.play(group.animate.shift(dest.get_center() - group[2].get_center()))
+            self.wait(0.5)
+  description: |
+    这段代码使用 Manim 库创建了一个动画场景，展示一组点移动到目标位置的效果：
+
+    1. 创建一个包含四个点的组 (`group`)，其中一个点为红色，其余为默认颜色。
+    2. 创建一个黄色的目标点 (`dest`)。
+    3. 添加组和目标点到场景中。
+    4. 将组移动到使其第三个点与目标点重合的位置。
+
+    动画效果：
+    - 整个点组移动，使得红色点与目标点对齐。
+- name: MovingFrameBox
+  content: |
+    class MovingFrameBox(Scene):
+        def construct(self):
+            text=MathTex(
+                "\\frac{d}{dx}f(x)g(x)=","f(x)\\frac{d}{dx}g(x)","+",
+                "g(x)\\frac{d}{dx}f(x)"
+            )
+            self.play(Write(text))
+            framebox1 = SurroundingRectangle(text[1], buff = .1)
+            framebox2 = SurroundingRectangle(text[3], buff = .1)
+            self.play(
+                Create(framebox1),
+            )
+            self.wait()
+            self.play(
+                ReplacementTransform(framebox1,framebox2),
+            )
+            self.wait()
+  description: |
+    这段代码使用 Manim 库创建了一个动画场景，展示一个框在公式中的不同部分之间移动：
+
+    1. 创建一个数学公式：
+      \[
+      \frac{d}{dx}f(x)g(x) = f(x)\frac{d}{dx}g(x) + g(x)\frac{d}{dx}f(x)
+      \]
+    2. 将公式写到场景中。
+    3. 创建两个矩形框，分别围绕公式中的第二部分 `f(x)\frac{d}{dx}g(x)` 和第四部分 `g(x)\frac{d}{dx}f(x)`。
+    4. 动画效果：
+      - 创建并显示围绕第二部分的矩形框。
+      - 矩形框从第二部分移动到第四部分。
+- name: RotationUpdater
+  content: |
+    class RotationUpdater(Scene):
+        def construct(self):
+            def updater_forth(mobj, dt):
+                mobj.rotate_about_origin(dt)
+            def updater_back(mobj, dt):
+                mobj.rotate_about_origin(-dt)
+            line_reference = Line(ORIGIN, LEFT).set_color(WHITE)
+            line_moving = Line(ORIGIN, LEFT).set_color(YELLOW)
+            line_moving.add_updater(updater_forth)
+            self.add(line_reference, line_moving)
+            self.wait(2)
+            line_moving.remove_updater(updater_forth)
+            line_moving.add_updater(updater_back)
+            self.wait(2)
+            line_moving.remove_updater(updater_back)
+            self.wait(0.5)
+  description: |
+    这段代码使用 Manim 库创建了一个展示线段旋转的动画场景：
+
+    1. 创建一个静止的白色参考线段 (`line_reference`)。
+    2. 创建一个黄色的旋转线段 (`line_moving`)。
+    3. 定义两个更新器：
+      - `updater_forth`：使线段按顺时针方向旋转。
+      - `updater_back`：使线段按逆时针方向旋转。
+    4. 添加参考线段和旋转线段到场景中，并应用 `updater_forth` 使旋转线段顺时针旋转2秒。
+    5. 移除 `updater_forth` 并应用 `updater_back` 使旋转线段逆时针旋转2秒。
+    6. 最后移除 `updater_back`，使旋转停止。
+- name: PointWithTrace
+  content: |
+    class PointWithTrace(Scene):
+        def construct(self):
+            path = VMobject()
+            dot = Dot()
+            path.set_points_as_corners([dot.get_center(), dot.get_center()])
+            def update_path(path):
+                previous_path = path.copy()
+                previous_path.add_points_as_corners([dot.get_center()])
+                path.become(previous_path)
+            path.add_updater(update_path)
+            self.add(path, dot)
+            self.play(Rotating(dot, radians=PI, about_point=RIGHT, run_time=2))
+            self.wait()
+            self.play(dot.animate.shift(UP))
+            self.play(dot.animate.shift(LEFT))
+            self.wait()
+  description: |
+    这段代码使用 Manim 库创建了一个点带有轨迹的动画场景：
+
+    1. 创建一个路径 (`path`) 和一个点 (`dot`)。
+    2. 初始化路径，使其起点和终点都在点的当前位置。
+    3. 定义一个更新器 `update_path`，用于更新路径，使其每帧都包含点的新位置。
+    4. 将路径和点添加到场景中，并应用更新器。
+    5. 动画效果：
+      - 点绕右侧点顺时针旋转180度，带有轨迹，持续2秒。
+      - 点向上移动并留下轨迹。
+      - 点向左移动并留下轨迹。
+    6. 最后等待一段时间，使动画结束。
+
+    这个场景展示了如何使用 Manim 在点移动时留下路径轨迹。

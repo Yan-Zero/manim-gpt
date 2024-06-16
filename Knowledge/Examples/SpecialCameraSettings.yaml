@@ -1,0 +1,252 @@
+- name: FollowingGraphCamera
+  content: |
+    class FollowingGraphCamera(MovingCameraScene):
+        def construct(self):
+            self.camera.frame.save_state()
+
+            # create the axes and the curve
+            ax = Axes(x_range=[-1, 10], y_range=[-1, 10])
+            graph = ax.plot(lambda x: np.sin(x), color=BLUE, x_range=[0, 3 * PI])
+
+            # create dots based on the graph
+            moving_dot = Dot(ax.i2gp(graph.t_min, graph), color=ORANGE)
+            dot_1 = Dot(ax.i2gp(graph.t_min, graph))
+            dot_2 = Dot(ax.i2gp(graph.t_max, graph))
+
+            self.add(ax, graph, dot_1, dot_2, moving_dot)
+            self.play(self.camera.frame.animate.scale(0.5).move_to(moving_dot))
+
+            def update_curve(mob):
+                mob.move_to(moving_dot.get_center())
+
+            self.camera.frame.add_updater(update_curve)
+            self.play(MoveAlongPath(moving_dot, graph, rate_func=linear))
+            self.camera.frame.remove_updater(update_curve)
+
+            self.play(Restore(self.camera.frame))
+  description: |
+    这段代码使用 Manim 库创建了一个相机跟随点移动的动画场景：
+
+    1. 创建坐标轴和 \(y = \sin(x)\) 的曲线。
+    2. 创建一个移动点和两个固定点（曲线起点和终点）。
+    3. 相机缩放并聚焦到移动点。
+    4. 相机跟随点沿曲线移动。
+    5. 恢复相机初始状态。
+
+    最终效果是相机动态跟随点沿着曲线移动。
+- name: MovingZoomedSceneAround
+  content: |
+    class MovingZoomedSceneAround(ZoomedScene):
+    # contributed by TheoremofBeethoven, www.youtube.com/c/TheoremofBeethoven
+        def __init__(self, **kwargs):
+            ZoomedScene.__init__(
+                self,
+                zoom_factor=0.3,
+                zoomed_display_height=1,
+                zoomed_display_width=6,
+                image_frame_stroke_width=20,
+                zoomed_camera_config={
+                    "default_frame_stroke_width": 3,
+                    },
+                **kwargs
+            )
+
+        def construct(self):
+            dot = Dot().shift(UL * 2)
+            image = ImageMobject(np.uint8([[0, 100, 30, 200],
+                                          [255, 0, 5, 33]]))
+            image.height = 7
+            frame_text = Text("Frame", color=PURPLE, font_size=67)
+            zoomed_camera_text = Text("Zoomed camera", color=RED, font_size=67)
+
+            self.add(image, dot)
+            zoomed_camera = self.zoomed_camera
+            zoomed_display = self.zoomed_display
+            frame = zoomed_camera.frame
+            zoomed_display_frame = zoomed_display.display_frame
+
+            frame.move_to(dot)
+            frame.set_color(PURPLE)
+            zoomed_display_frame.set_color(RED)
+            zoomed_display.shift(DOWN)
+
+            zd_rect = BackgroundRectangle(zoomed_display, fill_opacity=0, buff=MED_SMALL_BUFF)
+            self.add_foreground_mobject(zd_rect)
+
+            unfold_camera = UpdateFromFunc(zd_rect, lambda rect: rect.replace(zoomed_display))
+
+            frame_text.next_to(frame, DOWN)
+
+            self.play(Create(frame), FadeIn(frame_text, shift=UP))
+            self.activate_zooming()
+
+            self.play(self.get_zoomed_display_pop_out_animation(), unfold_camera)
+            zoomed_camera_text.next_to(zoomed_display_frame, DOWN)
+            self.play(FadeIn(zoomed_camera_text, shift=UP))
+            # Scale in        x   y  z
+            scale_factor = [0.5, 1.5, 0]
+            self.play(
+                frame.animate.scale(scale_factor),
+                zoomed_display.animate.scale(scale_factor),
+                FadeOut(zoomed_camera_text),
+                FadeOut(frame_text)
+            )
+            self.wait()
+            self.play(ScaleInPlace(zoomed_display, 2))
+            self.wait()
+            self.play(frame.animate.shift(2.5 * DOWN))
+            self.wait()
+            self.play(self.get_zoomed_display_pop_out_animation(), unfold_camera, rate_func=lambda t: smooth(1 - t))
+            self.play(Uncreate(zoomed_display_frame), FadeOut(frame))
+            self.wait()
+  description: |
+    这段代码使用 Manim 库创建了一个带有缩放和移动功能的动画场景：
+
+    1. 初始化场景，设置缩放参数。
+    2. 创建一个点和一个图像对象，并将图像高度设置为 7。
+    3. 添加文本标签“Frame”和“Zoomed camera”。
+    4. 将点和图像添加到场景中。
+    5. 配置缩放相机和显示框架，并将框架移动到点的位置。
+    6. 设置缩放相机和显示框架的颜色。
+    7. 将缩放显示框架移动到场景下方。
+    8. 创建背景矩形并添加到前景中。
+    9. 播放动画，展示缩放框架、文本标签、并激活缩放。
+    10. 缩放和移动框架，并隐藏文本标签。
+    11. 最终恢复相机的初始状态，并移除显示框架。
+
+    这个场景展示了如何在 Manim 中创建一个带有缩放和移动功能的动画效果。
+- name: FixedInFrameMObjectTest
+  content: |
+    class FixedInFrameMObjectTest(ThreeDScene):
+        def construct(self):
+            axes = ThreeDAxes()
+            self.set_camera_orientation(phi=75 * DEGREES, theta=-45 * DEGREES)
+            text3d = Text("This is a 3D text")
+            self.add_fixed_in_frame_mobjects(text3d)
+            text3d.to_corner(UL)
+            self.add(axes)
+            self.wait()
+  description: |
+    这段代码使用 Manim 库创建了一个三维场景，其中包含固定在框架内的文本对象：
+
+    1. 创建三维坐标轴 (`axes`)。
+    2. 设置相机的视角，俯视角度为 75 度，水平旋转角度为 -45 度。
+    3. 创建一个文本对象 (`text3d`)，内容为 "This is a 3D text"。
+    4. 使用 `add_fixed_in_frame_mobjects` 方法将文本对象固定在相机视角内，使其不随场景旋转。
+    5. 将文本对象放置在左上角。
+    6. 将坐标轴添加到场景中。
+    7. 等待一段时间以展示场景。
+
+    这个场景展示了如何在三维场景中固定文本对象，使其始终在视图中保持静止。
+- name: ThreeDLightSourcePosition
+  content: |
+    class ThreeDLightSourcePosition(ThreeDScene):
+        def construct(self):
+            axes = ThreeDAxes()
+            sphere = Surface(
+                lambda u, v: np.array([
+                    1.5 * np.cos(u) * np.cos(v),
+                    1.5 * np.cos(u) * np.sin(v),
+                    1.5 * np.sin(u)
+                ]), v_range=[0, TAU], u_range=[-PI / 2, PI / 2],
+                checkerboard_colors=[RED_D, RED_E], resolution=(15, 32)
+            )
+            self.renderer.camera.light_source.move_to(3*IN) # changes the source of the light
+            self.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
+            self.add(axes, sphere)
+  description: |
+    这段代码使用 Manim 库创建了一个三维场景，其中包含一个光源位置可调的球体：
+
+    1. 创建三维坐标轴 (`axes`)。
+    2. 创建一个球体表面 (`sphere`)，定义其参数化方程，并使用红色的棋盘格颜色。
+    3. 将光源移动到场景内的位置 (`3*IN`)，改变光源的位置。
+    4. 设置相机的视角，俯视角度为 75 度，水平旋转角度为 30 度。
+    5. 将坐标轴和球体添加到场景中。
+
+    这个场景展示了如何在三维场景中调整光源位置以影响物体的照明效果。
+- name: ThreeDCameraRotation
+  content: |
+    class ThreeDCameraRotation(ThreeDScene):
+        def construct(self):
+            axes = ThreeDAxes()
+            circle=Circle()
+            self.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
+            self.add(circle,axes)
+            self.begin_ambient_camera_rotation(rate=0.1)
+            self.wait()
+            self.stop_ambient_camera_rotation()
+            self.move_camera(phi=75 * DEGREES, theta=30 * DEGREES)
+            self.wait()
+  description: |
+    这段代码使用 Manim 库创建了一个三维场景，其中相机会旋转：
+
+    1. 创建三维坐标轴 (`axes`) 和一个圆 (`circle`)。
+    2. 设置相机的初始视角，俯视角度为 75 度，水平旋转角度为 30 度。
+    3. 将圆和坐标轴添加到场景中。
+    4. 开始相机的环境旋转，旋转速率为 0.1。
+    5. 等待一段时间，使旋转可见。
+    6. 停止相机的环境旋转。
+    7. 将相机视角重置为初始状态。
+    8. 等待一段时间以展示场景。
+
+    这个场景展示了如何在 Manim 中使相机在三维场景中旋转。
+- name: ThreeDCameraIllusionRotation
+  content: |
+    class ThreeDCameraIllusionRotation(ThreeDScene):
+        def construct(self):
+            axes = ThreeDAxes()
+            circle=Circle()
+            self.set_camera_orientation(phi=75 * DEGREES, theta=30 * DEGREES)
+            self.add(circle,axes)
+            self.begin_3dillusion_camera_rotation(rate=2)
+            self.wait(PI/2)
+            self.stop_3dillusion_camera_rotation()
+  description: |
+    这段代码使用 Manim 库创建一个三维场景，其中相机执行一种“错觉旋转”：
+
+    1. 创建三维坐标轴 (`axes`) 和一个圆 (`circle`)。
+    2. 设置相机的初始视角。
+    3. 添加圆和坐标轴到场景中。
+    4. 开始相机的错觉旋转，旋转速率为 2。
+    5. 等待 \(\pi/2\) 时间。
+    6. 停止相机的错觉旋转。
+
+    这个场景展示了在 Manim 中如何实现三维相机的错觉旋转效果。
+- name: ThreeDSurfacePlot
+  content: |
+    class ThreeDSurfacePlot(ThreeDScene):
+        def construct(self):
+            resolution_fa = 24
+            self.set_camera_orientation(phi=75 * DEGREES, theta=-30 * DEGREES)
+
+            def param_gauss(u, v):
+                x = u
+                y = v
+                sigma, mu = 0.4, [0.0, 0.0]
+                d = np.linalg.norm(np.array([x - mu[0], y - mu[1]]))
+                z = np.exp(-(d ** 2 / (2.0 * sigma ** 2)))
+                return np.array([x, y, z])
+
+            gauss_plane = Surface(
+                param_gauss,
+                resolution=(resolution_fa, resolution_fa),
+                v_range=[-2, +2],
+                u_range=[-2, +2]
+            )
+
+            gauss_plane.scale(2, about_point=ORIGIN)
+            gauss_plane.set_style(fill_opacity=1,stroke_color=GREEN)
+            gauss_plane.set_fill_by_checkerboard(ORANGE, BLUE, opacity=0.5)
+            axes = ThreeDAxes()
+            self.add(axes,gauss_plane)
+  description: |
+    这段代码使用 Manim 库创建了一个三维高斯曲面图：
+
+    1. 设置相机的初始视角。
+    2. 定义一个高斯曲面的参数化函数 `param_gauss`。
+    3. 使用该函数创建一个曲面 (`gauss_plane`)，分辨率为 24，参数范围为 \([-2, 2]\)。
+    4. 将曲面缩放两倍，设置填充样式为橙色和蓝色的棋盘格，透明度为0.5，边框颜色为绿色。
+    5. 创建三维坐标轴 (`axes`)。
+    6. 将坐标轴和曲面添加到场景中。
+
+    这个场景展示了一个带有高斯分布形状的三维曲面图。

@@ -1,0 +1,226 @@
+- name: SinAndCosFunctionPlot 
+  content: |
+    class SinAndCosFunctionPlot(Scene):
+        def construct(self):
+            axes = Axes(
+                x_range=[-10, 10.3, 1],
+                y_range=[-1.5, 1.5, 1],
+                x_length=10,
+                axis_config={"color": GREEN},
+                x_axis_config={
+                    "numbers_to_include": np.arange(-10, 10.01, 2),
+                    "numbers_with_elongated_ticks": np.arange(-10, 10.01, 2),
+                },
+                tips=False,
+            )
+            axes_labels = axes.get_axis_labels()
+            sin_graph = axes.plot(lambda x: np.sin(x), color=BLUE)
+            cos_graph = axes.plot(lambda x: np.cos(x), color=RED)
+
+            sin_label = axes.get_graph_label(
+                sin_graph, "\\sin(x)", x_val=-10, direction=UP / 2
+            )
+            cos_label = axes.get_graph_label(cos_graph, label="\\cos(x)")
+
+            vert_line = axes.get_vertical_line(
+                axes.i2gp(TAU, cos_graph), color=YELLOW, line_func=Line
+            )
+            line_label = axes.get_graph_label(
+                cos_graph, "x=2\pi", x_val=TAU, direction=UR, color=WHITE
+            )
+
+            plot = VGroup(axes, sin_graph, cos_graph, vert_line)
+            labels = VGroup(axes_labels, sin_label, cos_label, line_label)
+            self.add(plot, labels)
+  description: |
+    这段代码使用 Manim 库创建一个展示正弦和余弦函数图像的动画场景：
+
+    1. 创建坐标轴，设定 \(x\) 和 \(y\) 轴的范围和颜色。
+    2. 绘制正弦函数（蓝色）和余弦函数（红色）。
+    3. 添加函数标签和垂直线及其标签。
+    4. 将所有元素添加到场景中。
+
+    最终效果是一个标注了正弦和余弦函数的图像。
+- name: ArgMinExample
+  content: |
+    class ArgMinExample(Scene):
+        def construct(self):
+            ax = Axes(
+                x_range=[0, 10], y_range=[0, 100, 10], axis_config={"include_tip": False}
+            )
+            labels = ax.get_axis_labels(x_label="x", y_label="f(x)")
+
+            t = ValueTracker(0)
+
+            def func(x):
+                return 2 * (x - 5) ** 2
+            graph = ax.plot(func, color=MAROON)
+
+            initial_point = [ax.coords_to_point(t.get_value(), func(t.get_value()))]
+            dot = Dot(point=initial_point)
+
+            dot.add_updater(lambda x: x.move_to(ax.c2p(t.get_value(), func(t.get_value()))))
+            x_space = np.linspace(*ax.x_range[:2],200)
+            minimum_index = func(x_space).argmin()
+
+            self.add(ax, labels, graph, dot)
+            self.play(t.animate.set_value(x_space[minimum_index]))
+            self.wait()
+  description: |
+    这段代码使用 Manim 库创建一个展示函数最小值的动画场景：
+
+    1. 创建坐标轴和标签。
+    2. 定义一个二次函数 \(f(x) = 2(x - 5)^2\)。
+    3. 绘制函数图像。
+    4. 创建一个点，并使其沿函数图像移动。
+    5. 计算函数最小值的位置，并将点移动到该位置。
+
+    最终效果是点沿着函数图像移动到最小值位置。
+- name: GraphAreaPlot
+  content: |
+    class GraphAreaPlot(Scene):
+        def construct(self):
+            ax = Axes(
+                x_range=[0, 5],
+                y_range=[0, 6],
+                x_axis_config={"numbers_to_include": [2, 3]},
+                tips=False,
+            )
+
+            labels = ax.get_axis_labels()
+
+            curve_1 = ax.plot(lambda x: 4 * x - x ** 2, x_range=[0, 4], color=BLUE_C)
+            curve_2 = ax.plot(
+                lambda x: 0.8 * x ** 2 - 3 * x + 4,
+                x_range=[0, 4],
+                color=GREEN_B,
+            )
+
+            line_1 = ax.get_vertical_line(ax.input_to_graph_point(2, curve_1), color=YELLOW)
+            line_2 = ax.get_vertical_line(ax.i2gp(3, curve_1), color=YELLOW)
+
+            riemann_area = ax.get_riemann_rectangles(curve_1, x_range=[0.3, 0.6], dx=0.03, color=BLUE, fill_opacity=0.5)
+            area = ax.get_area(curve_2, [2, 3], bounded_graph=curve_1, color=GREY, opacity=0.5)
+
+            self.add(ax, labels, curve_1, curve_2, line_1, line_2, riemann_area, area)
+  description: |
+    这段代码使用 Manim 库创建了一个展示函数图像及其区域的动画场景：
+
+    1. 创建坐标轴和标签。
+    2. 绘制两个函数曲线：
+      - 曲线1：\(f(x) = 4x - x^2\)，颜色为蓝色。
+      - 曲线2：\(g(x) = 0.8x^2 - 3x + 4\)，颜色为绿色。
+    3. 添加两条黄色的垂直线，分别在 \(x = 2\) 和 \(x = 3\) 处。
+    4. 计算并绘制曲线1在区间 [0.3, 0.6] 上的 Riemann 矩形，颜色为蓝色，透明度为0.5。
+    5. 计算并绘制曲线2在区间 [2, 3] 与曲线1之间的面积，颜色为灰色，透明度为0.5。
+
+    最终效果是展示了两条函数曲线及其间的面积和部分 Riemann 矩形区域。
+- name: PolygonOnAxes
+  content: |
+    class PolygonOnAxes(Scene):
+        def get_rectangle_corners(self, bottom_left, top_right):
+            return [
+                (top_right[0], top_right[1]),
+                (bottom_left[0], top_right[1]),
+                (bottom_left[0], bottom_left[1]),
+                (top_right[0], bottom_left[1]),
+            ]
+
+        def construct(self):
+            ax = Axes(
+                x_range=[0, 10],
+                y_range=[0, 10],
+                x_length=6,
+                y_length=6,
+                axis_config={"include_tip": False},
+            )
+
+            t = ValueTracker(5)
+            k = 25
+
+            graph = ax.plot(
+                lambda x: k / x,
+                color=YELLOW_D,
+                x_range=[k / 10, 10.0, 0.01],
+                use_smoothing=False,
+            )
+
+            def get_rectangle():
+                polygon = Polygon(
+                    *[
+                        ax.c2p(*i)
+                        for i in self.get_rectangle_corners(
+                            (0, 0), (t.get_value(), k / t.get_value())
+                        )
+                    ]
+                )
+                polygon.stroke_width = 1
+                polygon.set_fill(BLUE, opacity=0.5)
+                polygon.set_stroke(YELLOW_B)
+                return polygon
+
+            polygon = always_redraw(get_rectangle)
+
+            dot = Dot()
+            dot.add_updater(lambda x: x.move_to(ax.c2p(t.get_value(), k / t.get_value())))
+            dot.set_z_index(10)
+
+            self.add(ax, graph, dot)
+            self.play(Create(polygon))
+            self.play(t.animate.set_value(10))
+            self.play(t.animate.set_value(k / 10))
+            self.play(t.animate.set_value(5))
+  description: |
+    这段代码使用 Manim 库创建了一个在坐标轴上绘制多边形的动画场景：
+
+    1. 创建坐标轴，\(x\) 和 \(y\) 轴范围为 0 到 10，长度为 6，且不包括箭头。
+    2. 定义一个值追踪器 `t`，初始值为 5。
+    3. 绘制函数 \(y = \frac{k}{x}\) 的图像，颜色为黄色，参数 \(k = 25\)。
+    4. 定义一个函数 `get_rectangle` 用于生成一个矩形，其右上角由 \((t, \frac{k}{t})\) 确定。
+      - 矩形填充为蓝色，透明度为0.5，边框为黄色。
+    5. 使用 `always_redraw` 确保矩形在 `t` 变化时实时更新。
+    6. 创建一个点，并根据 `t` 的值动态移动到曲线上相应的位置。
+    7. 添加坐标轴、函数图像和点到场景中。
+    8. 动画效果：
+      - 绘制矩形。
+      - 动态调整 `t` 的值使矩形右上角移动到 \((10, \frac{k}{10})\)。
+      - 动态调整 `t` 的值使矩形右上角移动到 \((\frac{k}{10}, 10)\)。
+      - 动态调整 `t` 的值使矩形右上角回到 \((5, 5)\)。
+
+    最终效果展示了在坐标轴上绘制的函数曲线及其动态变化的矩形区域。
+- name: HeatDiagramPlot
+  content: |
+    class HeatDiagramPlot(Scene):
+        def construct(self):
+            ax = Axes(
+                x_range=[0, 40, 5],
+                y_range=[-8, 32, 5],
+                x_length=9,
+                y_length=6,
+                x_axis_config={"numbers_to_include": np.arange(0, 40, 5)},
+                y_axis_config={"numbers_to_include": np.arange(-5, 34, 5)},
+                tips=False,
+            )
+            labels = ax.get_axis_labels(
+                x_label=Tex("$\Delta Q$"), y_label=Tex("T[$^\circ C$]")
+            )
+
+            x_vals = [0, 8, 38, 39]
+            y_vals = [20, 0, 0, -5]
+            graph = ax.plot_line_graph(x_values=x_vals, y_values=y_vals)
+
+            self.add(ax, labels, graph)
+  description: |
+    这段代码使用 Manim 库创建了一个展示热图的动画场景：
+
+    1. 创建坐标轴 (`ax`)，设置 \(x\) 轴范围为 0 到 40，步长为 5，长度为 9；\(y\) 轴范围为 -8 到 32，步长为 5，长度为 6，不包括箭头。
+    2. 创建坐标轴标签：
+      - \(x\) 轴标签为 \(\Delta Q\)。
+      - \(y\) 轴标签为 \(T[^\circ C]\)。
+    3. 定义 \(x\) 和 \(y\) 轴的取值：
+      - \(x\) 轴取值为 [0, 8, 38, 39]。
+      - \(y\) 轴取值为 [20, 0, 0, -5]。
+    4. 绘制折线图 (`graph`)，连接这些 \(x\) 和 \(y\) 取值点。
+    5. 将坐标轴、标签和折线图添加到场景中。
+
+    这个场景展示了热量变化（\(\Delta Q\)）与温度（\(T\)）之间关系的折线图。
