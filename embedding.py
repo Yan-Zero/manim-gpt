@@ -1,12 +1,29 @@
 import pathlib
 import yaml
-from openai import OpenAI
+import os
+import asyncio
+import asyncpg
+from openai import AsyncOpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
+OPENAI = AsyncOpenAI()
 
-if __name__ == "__main__":
+
+async def get_embedding(input: str):
+    return (
+        (
+            await OPENAI.embeddings.create(
+                input=input, model="text-embedding-3-large", dimensions=3072
+            )
+        )
+        .data[0]
+        .embedding
+    )
+
+
+async def main():
     embedding_3_large = {}
     try:
         with open(
@@ -17,43 +34,46 @@ if __name__ == "__main__":
             embedding_3_large = yaml.safe_load(f)
     except Exception as ex:
         print(ex)
-
-    if not isinstance(embedding_3_large, dict):
-        embedding_3_large = {}
-
-    client = OpenAI()
-
-    def get_embedding(text: str):
-        return client.embeddings.create(
-            model="text-embedding-3-large",
-            input=text,
-            dimensions=3072,
-        ).data[0]
-
-    knowledge_list = []
+    conn = await asyncpg.connect(
+        dsn=os.environ.get("DATABASE_URL"),
+    )
+    knowledge = {}
     for file in pathlib.Path("./knowledge").glob("**/*.yaml"):
         with open(file, "r", encoding="utf-8") as f:
-            knowledge_list.extend(yaml.safe_load(f) or [])
-    knowledge_dict = {
-        i["name"]: i for i in knowledge_list if i["name"] not in embedding_3_large
-    }
-    for key in knowledge_dict:
-        knowledge = knowledge_dict[key]
-        print(f"Processing {key}")
-        try:
-            embedding_3_large[key] = {
-                "content": get_embedding(knowledge["content"]).embedding,
-            }
-            if "description" in knowledge:
-                embedding_3_large[key]["description"] = (
-                    get_embedding(knowledge["description"]).embedding,
-                )
-        except Exception as e:
-            print(f"Error processing {key}: {e}")
+            for i in yaml.safe_load(f) or []:
+                if i["name"] in embedding_3_large:
+                    continue
+                knowledge[i["name"]] = i
+    for key in knowledge:
+        print(f"{key}")
+        await conn.execute(
+            (
+                "INSERT INTO manim_embedding (vec, name) VALUES ($1, $2) "
+                "ON CONFLICT (name) DO UPDATE SET vec = $1"
+            ),
+            str(await get_embedding(knowledge[key]["content"])),
+            f"{key}-content",
+        )
+        if "description" in knowledge[key]:
+            await conn.execute(
+                (
+                    "INSERT INTO manim_embedding (vec, name) VALUES ($1, $2) "
+                    "ON CONFLICT (name) DO UPDATE SET vec = $1"
+                ),
+                str(await get_embedding(knowledge[key]["description"])),
+                f"{key}-description",
+            )
+        embedding_3_large[key] = []
 
     with open(
         pathlib.Path(".") / "embedding" / "embedding_3_large.yaml",
         "w",
         encoding="utf-8",
     ) as f:
-        yaml.dump(embedding_3_large, f, sort_keys=False, allow_unicode=True)
+        yaml.dump(embedding_3_large, f)
+    await conn.close()
+
+
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "manim-gpt"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Yan <1964649083@qq.com>"]
 license = "Apache License 2.0"
@@ -14,6 +14,8 @@ sanic = "^23.12.1"
 markdown = "^3.6"
 setuptools = "^70.0.0"
 pyyaml = "^6.0.1"
+numpy = "^2.0.0"
+asyncpg = "^0.29.0"
 
 
 [build-system]
