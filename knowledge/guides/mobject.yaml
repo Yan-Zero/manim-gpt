@@ -1,0 +1,29 @@
+- name: "position_1-mobject"
+  content: "大家好，这里是manim幼儿园，欢迎来到manim教程第二章的第二节；Mobject的位置。本期视频将会为大家介绍manimce中的坐标系统，然后具体讲解控制Mobject位置的方法，以及获取Mobject位置的方法。长按点赞一键三连，我们开始吧。
+首先，我们得先了解manim的坐标系统。manim坐标是三维的，目前我们只考虑平面上的情况，因此就先忽略垂直于屏幕的Z轴。为了直观理解manim的坐标系统，我们可以在场景中添加一个NumberPlane对象（演示：写代码并渲染），它可以在整个场景里添加一个忽略Z轴的manim坐标平面。场景的中央为原点(0, 0, 0)。场景的宽和高对应坐标系的x轴和y轴，默认高度为8，宽度为128/9，宽高比为16比9。它们可以通过config的frame_width和frame_height两个属性获取，也可以使用配置文件修改（见附录）。为了让大家直观地看到物体的具体位置，在接下来的演示中，我们将会保留这个坐标平面。
+首先，我来介绍利用绝对坐标来控制物体位置的方法。在manim中，每个物体都存在一个绝对坐标，它代表物体的中心点所在的位置。例如，这是一个绝对坐标为(1, 1, 0)的圆，这是一个绝对坐标为(-1, 2, 0)的矩形。可以看到，二者中心点的坐标，就是它们的绝对坐标。"
+  description: "Introduction to Manim's coordinate system and absolute positioning of Mobjects."
+
+- name: "position_2-mobject"
+  content: "在manim中，大部分的Mobject都默认创建在原点处，也就是说，它们的绝对坐标一般都是(0, 0, 0)（在原点创建一个圆形和正方形）。怎样才能移动它们的位置呢？最直接的方法，就是move_to和set_x、set_y、set_z。其中move_to将物体移动到指定位置，参数类型是一个三维坐标或者另一个Mobject。以图中的正方形和圆形为例，如果对这个圆形使用move_to([1, 1, 0])，那么它的绝对坐标就会被更新到[1, 1, 0]这个位置。这时，有些同学可能就要问了：如果我想让圆形的右边对应到[1, 1, 0]这个地方（搞个小动画，让大家明白什么是“右边对齐”），该怎么办呢？可以使用aligned_edge参数，这里我们设定aligned_edge=RIGHT，就可以看到，圆形的右边界对齐到了这个点处。RIGHT实际上就是[1, 0, 0]，它既可以代表一个坐标，也可以代表一个物体的右边界。类似的表示方法，还有代表[-1, 0, 0]的LEFT、代表[0, 1, 0]的UP，代表[0, -1, 0]的DOWN（在说这三个东西的时候，动画跟进演示），以及代表[0, 0, 1]的OUT和代表[0, 0, -1]的IN，这两个常量会在我们日后进入三维世界的时候具体讨论。代表上下的方向还可以跟代表左右的方向复合，形成代表[1, 1, 0]的UR、代表[-1, -1, 0]的DL（这两个也要动画跟进）等四个常量。"
+  description: "Methods for moving Mobjects to specific coordinates and using alignment parameters."
+
+- name: "position_3-mobject"
+  content: "刚才我们提到，move_to的参数也可以是另一个Mobject，为了方便演示，我们把这个正方形扩大两倍，换个颜色（动画+代码跟进演示）。对这个正方形进行move_to(s)，那么它的中心就会移动到圆形的中心处。很多聪明的同学一定猜到了，这里也可以使用aligned_edge参数。比如，我们制定aligned_edge=UR，得到的结果，就是正方形的右上角，移动到了圆形的右上角处，使用其它的几种位置常量也可以得到类似的效果（动画演示一下UL、LEFT等情况，但是嘴上不说）。至于set_x、set_y、set_z这三种方法，顾名思义，就是只改变一个维度的坐标，不改变剩下两个维度的坐标。与move_to不同的地方在于，它们的参数只能是坐标，不能是Mobject。我们对这个圆形使用set_x(0)，它的中心点横坐标就变为了0。这三个方法有一个跟aligned_edge十分类似的参数，就是direction。例如这里，我设定direction=RIGHT，可以看到，圆形右边界的横坐标被设置为了0。其它的几个方法也是同理，这里不再赘述。"
+  description: "Examples of using move_to with other Mobjects and using set_x, set_y, and set_z."
+
+- name: "position_4-mobject"
+  content: "总而言之，这几个控制绝对坐标的方法很明了，但是不够方便，在复杂的场景中单独计算每个物体的坐标会很麻烦，所以manim提供了一套利用相对位置来控制物体位置的方法，这些方法分为两类。第一类是相对于场景的位置。center方法将物体移动到场景的正中央。to_edge则将其移至边界，场景有上、下、左、右四个边界，分别对应UP、DOWN、LEFT和RIGHT，这便是to_edge的第一个参数，需要注意的是，移至上、下边界时，物体不会横向移动，同理，移至左右边界也不会让它纵向移动，它还一个可选参数，名为buff，代表物体与边界之间的空隙。这个参数的默认值是0.5，也正是因此，我们的物体不会直接贴到边界上面，如果我们把它设置为0的话，物体就会严丝合缝地贴上去了（演示）。最后，to_corner表示移动到角落，同样也是四个角落，左上、左下、右上和右下，对应UL、DL、UR、DR，与to_edge方法一样，它也用buff表示物体到角落的空隙，默认值同样为0.5。"
+  description: "Using relative positioning methods in Manim such as center, to_edge, and to_corner."
+
+- name: "position_5-mobject"
+  content: "第二类，是相对于物体的位置，首先是shift，即相对于自身，比如shift(LEFT)会使它向左移动一个单位；接下来是next_to和align_to，两者都是相对于另一个物体或一个坐标点。next_to代表相邻，直接调用c.next_to(s)，会默认把c移动到s的右侧，第二个参数是direction，代表相对于另一个物体的位置，可以从我们刚才提到的那些位置常量中随意挑选。第三个参数是buff，物体与物体之间的距离，默认大小为0.25。接下来是align_to，代表对齐。它只有两个参数，除了第一个代表物体或坐标点的参数之外，第二个参数为direction，代表对齐的部分。比如说c.align_to(s, UP)，就会让c的上侧与s的上侧对齐，而左右位置不发生变化；如果是c.align_to(s, RIGHT)，则会让c的右侧与s的右侧对齐，而上下位置不发生变化。实际上，第二个参数也可以是UR、DR之类的常量，但是……与其这样，为啥不用move_to呢？"
+  description: "Using shift, next_to, and align_to methods for relative positioning in Manim."
+
+- name: "position_6-mobject"
+  content: "另外，刚才提到，next_to和align_to的第一个参数也可以是坐标点，但它们跟第一个参数为Mobject的情况基本上一样，因此这里不展开讲，大家可以自行尝试。最后，还有一系列match方法，比如match_x、match_y、match_z。可以把一个物体的某个维度上的坐标，跟另一个物体的某个维度上的坐标相匹配，它们的第一个参数只能是Mobject。比如，c.match_x(s)，可以让c与s的横坐标相匹配，而不影响另外两个坐标。这三种方法，也拥有direction这个参数，可以决定具体要让二者在哪一个部分的坐标相匹配。不过这个参数的定位有些尴尬。比如说，c.match_x(s, RIGHT)，跟c.align_to(s, RIGHT)是完全一样的，而c.match_x(s, UP)，和c.match_x(s)是完全一样的。大家可以体会一下，为什么会发生这两种情况。不过，值得一提的是，match家族的方法，在manim中占据了很大的位置，它们可以利用一个Mobject的属性，来决定另一个Mobject的属性。比如说match_color、match_width、match_height等方法，我们在日后的学习中，还会经常遇到它们。"
+  description: "Further exploration of next_to, align_to, and match methods in Manim."
+
+- name: "position_7-mobject"
+  content: "上面的这些方法，已经可以满足我们的很多需求了。不过，在实际制作动画的过程中，我们往往需要对一个物体的位置进行一些比较复杂的判断，这时，我们就需要想办法获取一个物体的位置。而get家族的方法就可以胜任这项工作。get家族的方法，往往用于获取物体的一些属性，比如get_center可以获取一个物体的中心坐标，而get_x、get_y可以单独获取物体中心点的横坐标或纵坐标（PS：当然还有get_z）。get_left可以获取物体的左边界中心点的坐标，同样，也有get_right、get_top、get_bottom这几种方法，分别可以获取物体的三个边界的中心点。物体的角落对应的坐标，则可以通过get_corner方法来获取，和前面的几种不同，这个方法是有一个参数的，它可以接受UR、UL等四个代表角落的位置常量，并返回物体角落的坐标。"
+  description: "Using get methods to retrieve positions and properties of Mobjects in Manim."

@@ -12,7 +12,7 @@ for file in pathlib.Path("./knowledge").glob("**/*.yaml"):
 conn = None
 
 
-async def aquery(embedding: list[float], top_k: int = 5) -> list[str]:
+async def aquery(embedding: list[float], top_k: int = 6) -> list[str]:
     conn = await asyncpg.connect(os.environ.get("DATABASE_URL"))
     data = []
     for i in await conn.fetch(
@@ -20,11 +20,12 @@ async def aquery(embedding: list[float], top_k: int = 5) -> list[str]:
         str(embedding),
         top_k * 2,
     ):
-        if i["name"].rsplit("-", 1)[0] not in KNOWLEDGE:
+        name = i["name"].rsplit("-", 1)[0]
+        if name not in KNOWLEDGE:
             continue
-        if i["name"] in data:
+        if name in data:
             continue
-        data.append(i["name"].rsplit("-", 1)[0])
+        data.append(name)
     data = data[:top_k]
     print(data)
     await conn.close()
