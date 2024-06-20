@@ -5,3 +5,22 @@
 - name: "mamba_installation_2"
   content: "Existing conda install (not recommended)\nWarning\n\nThis way of installing Mamba is not recommended. We strongly recommend to use the Miniforge method (see above).\n\nTo get mamba, just install it into the base environment from the conda-forge channel:\n\n# NOT RECOMMENDED: This method of installation is not recommended, prefer Miniforge instead (see above)\n# conda install -n base --override-channels -c conda-forge mamba 'python_abi=*=*cp*'\n\nWarning\n\nInstalling mamba into any other environment than base is not supported.\n\nDocker images\nIn addition to the Miniforge standalone distribution (see above), there are also the condaforge/miniforge3 docker images:\n\ndocker run -it --rm condaforge/miniforge3:latest mamba info"
   description: "Instructions and warnings for installing Mamba in an existing conda environment and using Miniforge Docker images for Mamba."
+
+- name: "issue_solution-importlib_metadata"
+  content: "遇到的错误是由于缺少 importlib_metadata 模块，这通常是因为 Python 版本过低导致的。为了解决这个问题，建议升级 Python 到 3.10 或更高版本。
+
+解决办法：
+1. 卸载现有的 Python 版本：
+- 打开终端或命令提示符，输入 `mamba deactivate` 退出当前虚拟环境。
+- 输入 `mamba remove -n manimce --all` 删除虚拟环境。
+
+2. 安装 Python 3.10 及以上版本：
+- 使用 Miniforge 或 Mambaforge 镜像安装合适的 Python 版本，可以使用如下命令：
+```bash
+mamba create -n manimce python=3.10
+mamba activate manimce
+pip install manim
+```
+
+完成这些步骤后，再次运行 `manim` 命令，应该就能正常工作了。"
+  description: "解决 importlib_metadata 模块缺失问题，通过升级 Python 版本到 3.10 及以上，并重新配置虚拟环境。"

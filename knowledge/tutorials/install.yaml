@@ -7,7 +7,7 @@
   description: "Instructions for installing Manim using Conda or similar environment managers."
 
 - name: "Installing Manim locally-install"
-  content: "Manim is a Python library, and it can be installed via pip or conda. However, some additional system dependencies need to be installed first. Manim requires Python version 3.8 or above to run. The following pages have operating system-specific instructions for you to follow. Depending on your setup, the installation process might be slightly different. If you encounter issues, join our Discord or start a new Discussion on GitHub."
+  content: "Manim is a Python library, and it can be installed via pip or conda. However, some additional system dependencies need to be installed first. Manim requires Python version 3.8 or above(3.10 is the best) to run. The following pages have operating system-specific instructions for you to follow. Depending on your setup, the installation process might be slightly different. If you encounter issues, join our Discord or start a new Discussion on GitHub."
   description: "Guide for installing Manim locally, with instructions for different operating systems."
 
 - name: "Using Manim via Docker-install"

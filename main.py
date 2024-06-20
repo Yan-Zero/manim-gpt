@@ -77,7 +77,8 @@ async def chat_completions(request: Request):
     for i, s in enumerate(await get_data(query)):
         r += f"{i+1}:\n{s}\n\n"
 
-    body["messages"].append(
+    body["messages"].insert(
+        -1,
         {
             "role": "user",
             "content": f"""<Query>
